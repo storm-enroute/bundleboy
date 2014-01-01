@@ -3,6 +3,9 @@ package org.storm.bundleboy
 
 
 import scala.language.dynamics
+import java.net._
+import java.io._
+import java.util.jar.JarFile
 import rapture.io._
 import net.lingala.zip4j.core._
 import net.lingala.zip4j.model._
@@ -23,9 +26,16 @@ trait Bundle extends PathRoot[Bundle.Url] with Scheme[Bundle.Url] {
 
   def urlToStream(url: Bundle.Url): java.io.InputStream
 
-  implicit object reader extends StreamReader[Bundle.Url, Byte] {
-    def input(t: Bundle.Url): Input[Byte] =
+  implicit def byteReader = new StreamReader[Bundle.Url, Byte] {
+    def input(t: Bundle.Url): Input[Byte] = {
       new ByteInput(new java.io.BufferedInputStream(urlToStream(t)))
+    }
+  }
+
+  implicit def charReader = new StreamReader[Bundle.Url, Char] {
+    def input(t: Bundle.Url): Input[Char] = {
+      new CharInput(new java.io.InputStreamReader(urlToStream(t)))
+    }
   }
 
 }
@@ -39,16 +49,16 @@ object Bundle {
     val pathRoot = bundle
   }
 
-  class Loader(val name: String, val classloader: ClassLoader) extends Bundle {
-    def urlToStream(url: Bundle.Url) = classloader.getResourceAsStream(url.pathString.substring(1))
-  }
+  abstract class ClazzLoader(val name: String, val classloader: ClassLoader) extends Bundle
 
   def newJarUrlClassLoader(url: String) = {
     import java.net._
     new URLClassLoader(Array(new URL(url)))
   }
 
-  class Jar(name: String, url: String) extends Loader(name, newJarUrlClassLoader(url))
+  class Jar(name: String, url: String) extends ClazzLoader(name, newJarUrlClassLoader(url)) {
+    def urlToStream(url: Bundle.Url) = classloader.getResourceAsStream(url.pathString.substring(1))
+  }
 
   def newEncryptedZipUrlClassLoader(filename: String, password: String) = {
     import java.net._
@@ -64,6 +74,23 @@ object Bundle {
       val nbuffer = new Array[Byte](buffer.length * 2)
       System.arraycopy(buffer, 0, nbuffer, 0, buffer.length)
       buffer = nbuffer
+    }
+
+    object BundleURLStreamHandler extends URLStreamHandler {
+      def openConnection(url: URL) = new BundleURLConnection(url)
+    }
+  
+    class BundleURLConnection(url: URL) extends URLConnection(url) {
+      def connect() {}
+      override def getInputStream = {
+        val fq = url.getFile.split("\\?")
+        val fn = fq(0)
+        assert(fn == filename)
+        val query = fq(1)
+        val path = URLDecoder.decode(query, "UTF-8")
+        val header = zipfile.getFileHeader(path)
+        zipfile.getInputStream(header)
+      }
     }
 
     override def findClass(name: String) = {
@@ -84,9 +111,24 @@ object Bundle {
       defineClass(name, buffer, 0, len)
     }
 
-    override def findResource(name: String) = ???
+    private def getLocalResource(name: String) = {
+      val encoded = URLEncoder.encode(name, "UTF-8")
+      new URL("bundleboy:file", "", -1, filename + "?" + encoded, BundleURLStreamHandler)
+    }
+
+    override def findResource(name: String) = {
+      val url = super.findResource(name)
+      if (url != null) url
+      else getLocalResource(name)
+    }
   }
 
-  class EncryptedZip(name: String, filename: String, password: String) extends Loader(name, newEncryptedZipUrlClassLoader(filename, password))
+  class EncryptedZip(name: String, filename: String, password: String)
+  extends ClazzLoader(name, newEncryptedZipUrlClassLoader(filename, password)) {
+    def urlToStream(url: Bundle.Url) = {
+      val path = URLDecoder.decode(url.pathString.substring(1), "UTF-8")
+      classloader.getResourceAsStream(path)
+    }
+  }
 
 }
