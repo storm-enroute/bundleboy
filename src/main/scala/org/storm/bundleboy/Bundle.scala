@@ -26,6 +26,10 @@ trait Bundle extends PathRoot[Bundle.Url] with Scheme[Bundle.Url] {
 
   def urlToStream(url: Bundle.Url): java.io.InputStream
 
+  val files = new Bundle.FilePath(this, Nil)
+
+  val classes = () // TODO
+
   implicit def byteReader = new StreamReader[Bundle.Url, Byte] {
     def input(t: Bundle.Url): Input[Byte] = {
       new ByteInput(new java.io.BufferedInputStream(urlToStream(t)))
@@ -42,6 +46,45 @@ trait Bundle extends PathRoot[Bundle.Url] with Scheme[Bundle.Url] {
 
 
 object Bundle {
+
+  trait Depickler[T] {
+    def apply(is: InputStream): T
+  }
+
+  object Depickler {
+    def image = new Depickler[java.awt.image.BufferedImage] {
+      def apply(is: InputStream) = javax.imageio.ImageIO.read(is)
+    }
+  }
+
+  class FilePath(val self: Bundle, val folders: List[String]) extends Dynamic {
+    def selectDynamic(name: String) = new FilePath(self, name :: folders)
+    def file(filename: String) = {
+      if (folders == Nil) self / s"$filename"
+      else folders.tail.foldRight(self / folders.head) {
+        (folder, path) => path / folder
+      } / s"$filename"
+    }
+    import self.byteReader
+    import self.charReader
+    def bytes(name: String): Array[Byte] = {
+      file(name).slurp[Byte]
+    }
+    def text(name: String)(implicit encoding: Encoding = Encodings.`UTF-8`): String = {
+      file(name).slurp[Char]
+    }
+    def resource[T](name: String)(implicit depickler: Depickler[T]): T = {
+      val is = new BufferedInputStream(self.urlToStream(file(name)))
+      try {
+        depickler(is)
+      } finally {
+        is.close()
+      }
+    }
+    def image(name: String): java.awt.image.BufferedImage = {
+      resource(name)(Depickler.image)
+    }
+  }
 
   class Url(bundle: Bundle, elements: Seq[String]) extends rapture.io.Url[Url](elements, Map()) {
     def makePath(ascent: Int, elements: Seq[String], afterPath: AfterPath) = new Url(bundle, elements)
@@ -111,7 +154,7 @@ object Bundle {
       defineClass(name, buffer, 0, len)
     }
 
-    private def getLocalResource(name: String) = {
+    private def getBundleResource(name: String) = {
       val encoded = URLEncoder.encode(name, "UTF-8")
       new URL("bundleboy:file", "", -1, filename + "?" + encoded, BundleURLStreamHandler)
     }
@@ -119,7 +162,7 @@ object Bundle {
     override def findResource(name: String) = {
       val url = super.findResource(name)
       if (url != null) url
-      else getLocalResource(name)
+      else getBundleResource(name)
     }
   }
 
