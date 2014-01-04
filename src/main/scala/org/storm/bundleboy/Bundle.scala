@@ -24,21 +24,23 @@ trait Bundle extends PathRoot[Bundle.Url] with Scheme[Bundle.Url] {
   
   def scheme = this
 
-  def urlToStream(url: Bundle.Url): java.io.InputStream
+  def stream(url: Bundle.Url): java.io.InputStream
+
+  def loadClass(name: String): Class[_]
 
   val files = new Bundle.FilePath(this, Nil)
 
-  val classes = () // TODO
+  val classes = new Bundle.Classes(this, Nil)
 
   implicit def byteReader = new StreamReader[Bundle.Url, Byte] {
     def input(t: Bundle.Url): Input[Byte] = {
-      new ByteInput(new java.io.BufferedInputStream(urlToStream(t)))
+      new ByteInput(new java.io.BufferedInputStream(stream(t)))
     }
   }
 
   implicit def charReader = new StreamReader[Bundle.Url, Char] {
     def input(t: Bundle.Url): Input[Char] = {
-      new CharInput(new java.io.InputStreamReader(urlToStream(t)))
+      new CharInput(new java.io.InputStreamReader(stream(t)))
     }
   }
 
@@ -52,19 +54,17 @@ object Bundle {
   }
 
   object Depickler {
-    def image = new Depickler[java.awt.image.BufferedImage] {
+    implicit def image = new Depickler[java.awt.image.BufferedImage] {
       def apply(is: InputStream) = javax.imageio.ImageIO.read(is)
     }
   }
 
   class FilePath(val self: Bundle, val folders: List[String]) extends Dynamic {
     def selectDynamic(name: String) = new FilePath(self, name :: folders)
-    def file(filename: String) = {
-      if (folders == Nil) self / s"$filename"
-      else folders.tail.foldRight(self / folders.head) {
+    def file(filename: String) = 
+      (filename :: folders).init.foldRight(self / folders.last) {
         (folder, path) => path / folder
-      } / s"$filename"
-    }
+      }
     import self.byteReader
     import self.charReader
     def bytes(name: String): Array[Byte] = {
@@ -74,7 +74,7 @@ object Bundle {
       file(name).slurp[Char]
     }
     def resource[T](name: String)(implicit depickler: Depickler[T]): T = {
-      val is = new BufferedInputStream(self.urlToStream(file(name)))
+      val is = new BufferedInputStream(self.stream(file(name)))
       try {
         depickler(is)
       } finally {
@@ -86,13 +86,23 @@ object Bundle {
     }
   }
 
+  class Classes(val self: Bundle, val packages: List[String]) extends Dynamic {
+    def selectDynamic(name: String) = new Classes(self, name :: packages)
+    def get(cls: Symbol) = {
+      val fullname = (cls.name :: packages).reverse.mkString(".")
+      self.loadClass(fullname)
+    }
+  }
+
   class Url(bundle: Bundle, elements: Seq[String]) extends rapture.io.Url[Url](elements, Map()) {
     def makePath(ascent: Int, elements: Seq[String], afterPath: AfterPath) = new Url(bundle, elements)
     def schemeSpecificPart = elements.mkString("//", "/", "")
     val pathRoot = bundle
   }
 
-  abstract class ClazzLoader(val name: String, val classloader: ClassLoader) extends Bundle
+  abstract class ClazzLoader(val name: String, val classloader: ClassLoader) extends Bundle {
+    def loadClass(name: String) = classloader.loadClass(name)
+  }
 
   def newJarUrlClassLoader(url: String) = {
     import java.net._
@@ -100,7 +110,7 @@ object Bundle {
   }
 
   class Jar(name: String, url: String) extends ClazzLoader(name, newJarUrlClassLoader(url)) {
-    def urlToStream(url: Bundle.Url) = classloader.getResourceAsStream(url.pathString.substring(1))
+    def stream(url: Bundle.Url) = classloader.getResourceAsStream(url.pathString.substring(1))
   }
 
   def newEncryptedZipUrlClassLoader(filename: String, password: String) = {
@@ -168,7 +178,7 @@ object Bundle {
 
   class EncryptedZip(name: String, filename: String, password: String)
   extends ClazzLoader(name, newEncryptedZipUrlClassLoader(filename, password)) {
-    def urlToStream(url: Bundle.Url) = {
+    def stream(url: Bundle.Url) = {
       val path = URLDecoder.decode(url.pathString.substring(1), "UTF-8")
       classloader.getResourceAsStream(path)
     }

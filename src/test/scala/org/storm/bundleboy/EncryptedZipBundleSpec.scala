@@ -27,7 +27,7 @@ class EncryptedZipBundleSpec extends FlatSpec with ShouldMatchers {
     assert(contents == testTxtContents)
   }
 
-  it should "fetch the resources in a dynamic way" in {
+  it should "fetch the resources using Dynamic" in {
     val bundle = new Bundle.EncryptedZip("testBundle", "resources/example-classes.bundle", "password")
     val contents = bundle.files.docs.file("test.txt")
     import bundle.charReader
@@ -39,6 +39,12 @@ class EncryptedZipBundleSpec extends FlatSpec with ShouldMatchers {
 
     val image = bundle.files.imgs.image("ski.png")
     assert(image != null)
+  }
+
+  it should "instantiate the class" in {
+    val bundle = new Bundle.EncryptedZip("testBundle", "resources/example-classes.bundle", "password")
+    val cls = bundle.classes.org.storm.bundleboy.get('TestExampleClass)
+    println(cls)
   }
 
 }
