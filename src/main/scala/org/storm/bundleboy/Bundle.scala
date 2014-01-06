@@ -6,6 +6,8 @@ import scala.language.dynamics
 import java.net._
 import java.io._
 import java.util.jar.JarFile
+import scala.collection._
+import scala.collection.convert.decorateAsScala._
 import rapture.io._
 import net.lingala.zip4j.core._
 import net.lingala.zip4j.model._
@@ -98,16 +100,48 @@ object Bundle {
     def subclasses(cls: Class[_]) = self.loadSubclasses(fullname, cls)
   }
 
-  class Url(bundle: Bundle, elements: Seq[String]) extends rapture.io.Url[Url](elements, Map()) {
+  class Url(bundle: Bundle, elements: Seq[String]) extends rapture.io.Url[Url](elements, immutable.Map()) {
     def makePath(ascent: Int, elements: Seq[String], afterPath: AfterPath) = new Url(bundle, elements)
     def schemeSpecificPart = elements.mkString("//", "/", "")
     val pathRoot = bundle
   }
 
-  class EncryptedZipFileClassLoader(filename: String, password: String) extends ClassLoader {
+  class EncryptedZipFileClassLoader(filename: String, password: String)
+  extends ClassLoader(Bundle.getClass.getClassLoader) {
     val zipfile = new ZipFile(filename)
+    val root = Package("")
+    val packages = mutable.Map[String, Package]()
     var buffer: Array[Byte] = new Array[Byte](1024)
+
+    case class Package(name: String) {
+      val classes = mutable.Set[String]()
+      val children = mutable.Set[Package]()
+    }
+
+    private def addPackages(parent: Package, ps: Array[String]): Unit = if (ps.nonEmpty) {
+      val currentName = if (parent == root) ps.head else parent.name + "." + ps.head
+      if (!packages.contains(currentName)) {
+        packages(currentName) = Package(currentName)
+        parent.children += packages(currentName)
+      }
+      val current = packages(currentName)
+      addPackages(current, ps.tail)
+    }
+
+    packages(root.name) = root
     if (zipfile.isEncrypted) zipfile.setPassword(password)
+    for (header <- zipfile.getFileHeaders.asScala) {
+      val name = header.asInstanceOf[FileHeader].getFileName
+      if (name.endsWith(".class")) {
+        val path = name.substring(0, name.length - 6)
+        val parts = path.split(java.io.File.separator)
+        addPackages(root, parts.init)
+        val pname = parts.init.mkString(".")
+        val cname = parts.last
+        val p = packages(pname)
+        p.classes += pname + "." + cname
+      }
+    }
 
     private def grow() {
       val nbuffer = new Array[Byte](buffer.length * 2)
@@ -150,7 +184,15 @@ object Bundle {
       defineClass(name, buffer, 0, len)
     }
 
-    def loadSubclasses(packageName: String, baseClass: Class[_]) = ???
+    def loadSubclasses(packageName: String, baseClass: Class[_]) = {
+      def classes(p: Package): Iterable[Class[_]] = {
+        val cs = for (cname <- p.classes) yield loadClass(cname)
+        val subcs = for (cp <- p.children) yield classes(cp)
+        cs ++ subcs.flatten
+      }
+      val cs = classes(packages(packageName))
+      cs.filter(c => baseClass.isAssignableFrom(c))
+    }
 
     private def getBundleResource(name: String) = {
       val encoded = URLEncoder.encode(name, "UTF-8")

@@ -50,11 +50,17 @@ class EncryptedZipBundleSpec extends FlatSpec with ShouldMatchers {
   }
 
   it should "retrieve all the classes in a package" in {
-
+    val bundle = new Bundle.EncryptedZipFile("testBundle", "resources/example-classes.bundle", "password")
+    val cs = bundle.classes.org.storm.bundleboy.all
+    cs.map(_.getSimpleName) should equal (Set("TestExampleClass", "TestExampleClass2"))
+    val cs2 = bundle.classes.org.storm.all
+    cs2.map(_.getSimpleName) should equal (Set("TestExampleClass", "TestExampleClass2", "TestExampleClassAbove"))
   }
 
   it should "retrieve all the subclasses in a package" in {
-
+    val bundle = new Bundle.EncryptedZipFile("testBundle", "resources/example-classes.bundle", "password")
+    val cs = bundle.classes.org.storm.bundleboy.subclasses(classOf[Serializable])
+    cs.map(_.getSimpleName) should equal (Set("TestExampleClass"))
   }
 
 }
