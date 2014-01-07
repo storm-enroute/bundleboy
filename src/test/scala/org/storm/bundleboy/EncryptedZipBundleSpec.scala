@@ -19,20 +19,8 @@ class EncryptedZipBundleSpec extends FlatSpec with ShouldMatchers {
     string should equal ("test string")
   }
 
-  "EncryptedZipBundle" should "fetch the resource correctly" in {
+  "EncryptedZipBundle" should "fetch the resources correctly" in {
     val bundle = new EncryptedZipBundle("testBundle", "resources/example-classes.bundle", "password")
-    import bundle.charReader
-    import Encodings.`UTF-8`
-    val contents = (bundle / "docs" / "test.txt").slurp[Char]
-    assert(contents == testTxtContents)
-  }
-
-  it should "fetch the resources using Dynamic" in {
-    val bundle = new EncryptedZipBundle("testBundle", "resources/example-classes.bundle", "password")
-    val contents = bundle.files.docs.file("test.txt")
-    import bundle.charReader
-    import Encodings.`UTF-8`
-    assert(contents.slurp[Char] == testTxtContents)
 
     val textContents = bundle.files.docs.text("test.txt")
     assert(textContents == testTxtContents)

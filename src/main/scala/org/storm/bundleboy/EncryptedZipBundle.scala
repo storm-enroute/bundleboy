@@ -8,7 +8,6 @@ import java.io._
 import java.util.jar.JarFile
 import scala.collection._
 import scala.collection.convert.decorateAsScala._
-import rapture.io._
 import net.lingala.zip4j.core._
 import net.lingala.zip4j.model._
 import net.lingala.zip4j.util._
@@ -19,14 +18,11 @@ class EncryptedZipBundle(val name: String, val filename: String, val password: S
 extends Bundle {
   val classloader = new EncryptedZipBundle.ClazzLoader(filename, password)
 
-  protected def bundleUrl = "file:" + filename
-
   def loadClass(name: String) = classloader.loadClass(name)
 
   def loadSubclasses(packageName: String, baseClass: Class[_]) = classloader.loadSubclasses(packageName, baseClass)
 
-  def loadStream(url: Bundle.Url) = {
-    val path = URLDecoder.decode(url.pathString.substring(1), "UTF-8")
+  def loadStream(path: String) = {
     classloader.getResourceAsStream(path)
   }
 }
@@ -97,7 +93,7 @@ object EncryptedZipBundle {
         assert(fn == filename)
         val query = fq(1)
         val path = URLDecoder.decode(query, "UTF-8")
-        val header = zipfile.getFileHeader(path)
+        val header = zipfile.getFileHeader(path.substring(1))
         zipfile.getInputStream(header)
       }
     }

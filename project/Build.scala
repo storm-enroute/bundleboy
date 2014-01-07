@@ -13,8 +13,8 @@ object BundleBoyBuild extends Build {
     scalaVersion := "2.10.1",
     libraryDependencies ++= Seq(
       "org.scalatest" % "scalatest_2.10" % "1.9.1",
-      "com.propensive" % "rapture-io" % "0.7.2",
-      "net.lingala.zip4j" % "zip4j" % "1.2.3"
+      "net.lingala.zip4j" % "zip4j" % "1.2.3",
+      "commons-io" % "commons-io" % "2.4"
     ),
     scalacOptions ++= Seq(
       "-deprecation",
