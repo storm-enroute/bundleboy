@@ -5,9 +5,7 @@ import java.io.File
 
 
 
-object BundleBoyBuild extends Build {
-
-  /* bundleboy */
+object BundleboySbtPluginBuild extends Build {
 
   val publishUser = "SONATYPE_USER"
   
@@ -26,22 +24,13 @@ object BundleBoyBuild extends Build {
       publish <<= streams.map(_.log.info("Publishing to Sonatype is disabled since the \"" + publishUser + "\" and/or \"" + publishPass + "\" environment variables are not set."))
   })
 
-  val bundleboySettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
-    name := "bundleboy",
-    organization := "com.storm-enroute",
-    version := "0.2-SNAPSHOT",
+  val bundleboySbtPluginSettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
+    sbtPlugin := true,
+    name := "bundleboy-sbt-plugin",
     scalaVersion := "2.10.2",
-    libraryDependencies ++= Seq(
-      "org.scalatest" % "scalatest_2.10" % "2.1.0",
-      "commons-io" % "commons-io" % "2.4",
-      "net.databinder.dispatch" %% "dispatch-core" % "0.11.0"
-    ),
-    scalacOptions ++= Seq(
-      "-deprecation",
-      "-unchecked",
-      "-optimise",
-      "-Yinline-warnings"
-    ),
+    version := "0.2-SNAPSHOT",
+    organization := "com.storm-enroute",
+    libraryDependencies += "commons-io" % "commons-io" % "2.4",
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
       "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
@@ -78,10 +67,12 @@ object BundleBoyBuild extends Build {
       </developers>
   )
 
-  lazy val bundleboy = Project(
-    "bundleboy",
+  lazy val bundleboy = RootProject(uri("../"))
+
+  lazy val bundleboySbtPlugin = Project(
+    "bundleboy-sbt-plugin",
     file("."),
-    settings = bundleboySettings
-  )
+    settings = bundleboySbtPluginSettings
+  ) dependsOn(bundleboy)
 
 }
