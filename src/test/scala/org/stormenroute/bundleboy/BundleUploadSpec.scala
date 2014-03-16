@@ -5,11 +5,10 @@ package org.stormenroute.bundleboy
 import scala.concurrent._
 import scala.concurrent.duration._
 import org.scalatest._
-import org.scalatest.matchers.ShouldMatchers
 
 
 
-class BundleUploadSpec extends FunSuite with ShouldMatchers {
+class BundleUploadSpec extends FunSuite with Matchers {
 
   ignore("Bundle.Upload should correctly upload to Bintray") {
     val username = "user"

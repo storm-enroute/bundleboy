@@ -34,6 +34,7 @@ object BundleBoyBuild extends Build {
     libraryDependencies ++= Seq(
       "org.scalatest" % "scalatest_2.10" % "2.1.0",
       "commons-io" % "commons-io" % "2.4",
+      "org.apache.commons" % "commons-compress" % "1.8",
       "net.databinder.dispatch" %% "dispatch-core" % "0.11.0"
     ),
     scalacOptions ++= Seq(

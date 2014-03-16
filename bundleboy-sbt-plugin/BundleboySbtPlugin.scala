@@ -29,15 +29,20 @@ object BundleboySbtPlugin extends Plugin {
     "Creates a bundle with the project contents."
   )
 
-  val bundleTask = bundleKey <<= (bundlePasswordKey, bundlePathKey, classDirectory in Compile, streams) {
-    (password, bundlepath, classdir, streams) =>
+  val bundleCreatorKey = SettingKey[String](
+    "bundleCreator",
+    "Name of the bundle creator implementation."
+  )
+
+  val bundleTask = bundleKey <<= (bundleCreatorKey, bundlePasswordKey, bundlePathKey, classDirectory in Compile, streams) {
+    (bundler, password, bundlepath, classdir, streams) =>
     streams map { streams =>
       assert(password != "", "Password cannot be empty.")
       val bundlefile = new File(bundlepath)
       if (bundlefile.exists()) bundlefile.delete()
       val alldirs = classdir.listFiles()
       streams.log.info("Bundling dirs: " + alldirs.mkString(", "))
-      EncryptedZipBundle.fromFolder(alldirs, bundlepath, Some(password))
+      Class.forName(bundler).newInstance.asInstanceOf[Bundle.Creator].fromFolders(alldirs, bundlepath, () => password.toCharArray)
     }
   } dependsOn (packageBin in Compile)
 
@@ -133,6 +138,7 @@ object BundleboySbtPlugin extends Plugin {
 
   override val projectSettings = Seq(
     bundlePasswordKey := "",
+    bundleCreatorKey := "org.stormenroute.bundleboy.ZipBundleCreator",
     bundlePathSetting,
     bundleTask,
     bundleBintrayUserApiSetting,

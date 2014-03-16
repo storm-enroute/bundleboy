@@ -5,20 +5,17 @@ package org.stormenroute.bundleboy
 import scala.language.dynamics
 import java.net._
 import java.io._
-import java.util.jar.JarFile
 import scala.collection._
 import scala.collection.convert.decorateAsScala._
-import org.stormenroute.zip4j.core._
-import org.stormenroute.zip4j.model._
-import org.stormenroute.zip4j.util._
+import java.util.zip._
 
 
 
-class EncryptedZipBundle(val name: String, val filename: String, val password: String)
+class ZipBundle(val name: String, val filename: String, val passwordProvider: () => Array[Char])
 extends Bundle {
-  def this(name: String, file: File, password: String) = this(name, file.toString, password)
+  def this(name: String, file: File, passwordProvider: () => Array[Char]) = this(name, file.toString, passwordProvider)
 
-  val classloader = new EncryptedZipBundle.ZipClassLoader(filename, password)
+  val classloader = new ZipBundle.ZipClassLoader(filename, passwordProvider)
 
   def loadPaths(name: String) = classloader.loadPaths(name)
 
@@ -30,37 +27,20 @@ extends Bundle {
 }
 
 
-object EncryptedZipBundle {
+object ZipBundle {
 
-  def fromFolder(files: Seq[File], zipName: String, passwordOpt: Option[String]) {
-    val zipfile = new ZipFile(zipName, passwordOpt.orNull)
-    val params = new ZipParameters
-    params.setCompressionMethod(Zip4jConstants.COMP_DEFLATE)
-    params.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL)
-    
-    for (password <- passwordOpt) {
-      params.setEncryptFiles(true)
-      params.setEncryptionMethod(Zip4jConstants.ENC_METHOD_AES)
-      params.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256)
-      params.setPassword(password)
-    }
-
-    for (f <- files) zipfile.addFolder(f, params)
-  }
-
-  class ZipClassLoader(filename: String, password: String)
+  class ZipClassLoader(filename: String, passwordProvider: () => Array[Char])
   extends ClassLoader(Bundle.getClass.getClassLoader) {
-    val zipfile = new ZipFile(filename, password)
+    val zipfile = new ZipFile(filename)
     val root = Package("")
     val packages = mutable.Map[String, Package]()
     var buffer: Array[Byte] = new Array[Byte](1024)
 
     def loadPaths(name: String) = for {
-      fraw <- zipfile.getFileHeaders.asScala
-      fh = fraw.asInstanceOf[FileHeader]
-      if fh.getFileName.startsWith(name)
+      ze <- zipfile.entries.asScala.toSeq
+      if ze.getName.startsWith(name)
     } yield {
-      fh.getFileName
+      ze.getName
     }
 
     case class Package(name: String) {
@@ -79,9 +59,8 @@ object EncryptedZipBundle {
     }
 
     packages(root.name) = root
-    if (zipfile.isEncrypted) zipfile.setPassword(password)
-    for (header <- zipfile.getFileHeaders.asScala) {
-      val name = header.asInstanceOf[FileHeader].getFileName
+    for (ze <- zipfile.entries.asScala) {
+      val name = ze.getName
       if (name.endsWith(".class")) {
         val path = name.substring(0, name.length - 6)
         val parts = path.split("/")
@@ -111,15 +90,15 @@ object EncryptedZipBundle {
         assert(fn == filename)
         val query = fq(1)
         val path = URLDecoder.decode(query, "UTF-8")
-        val header = zipfile.getFileHeader(path)
-        zipfile.getInputStream(header)
+        val ze = zipfile.getEntry(path)
+        zipfile.getInputStream(ze)
       }
     }
 
     override def findClass(name: String) = {
       val path = name.replace('.', '/') + ".class"
-      val header = zipfile.getFileHeader(path)
-      val is = zipfile.getInputStream(header)
+      val ze = zipfile.getEntry(path)
+      val is = zipfile.getInputStream(ze)
       var len = 0
       try {
         var lastread = 0

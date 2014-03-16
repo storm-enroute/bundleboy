@@ -8,9 +8,6 @@ import java.io._
 import java.util.jar.JarFile
 import scala.collection._
 import scala.collection.convert.decorateAsScala._
-import org.stormenroute.zip4j.core._
-import org.stormenroute.zip4j.model._
-import org.stormenroute.zip4j.util._
 
 
 
@@ -34,6 +31,10 @@ trait Bundle {
 
 
 object Bundle extends BundleApi {
+
+  trait Creator {
+    def fromFolders(files: Seq[File], zipName: String, passwordProvider: () => Array[Char]): Unit
+  }
 
   trait Depickler[T] {
     def apply(is: InputStream): T
@@ -118,9 +119,9 @@ object Bundle extends BundleApi {
     def apply(classloader: ClassLoader) = new ClassLoaderBundle(classloader)
   }
 
-  object EncryptedZip {
-    def apply(name: String, path: String, password: String) = new EncryptedZipBundle(name, path, password)
-    def apply(name: String, path: java.io.File, password: String) = new EncryptedZipBundle(name, path, password)
+  object Zip {
+    def apply(name: String, filename: String) = new ZipBundle(name, filename, () => null)
+    def apply(name: String, file: File) = new ZipBundle(name, file, () => null)
   }
 
 }

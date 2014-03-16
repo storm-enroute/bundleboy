@@ -8,9 +8,6 @@ import java.io._
 import java.util.jar.JarFile
 import scala.collection._
 import scala.collection.convert.decorateAsScala._
-import org.stormenroute.zip4j.core._
-import org.stormenroute.zip4j.model._
-import org.stormenroute.zip4j.util._
 
 
 
