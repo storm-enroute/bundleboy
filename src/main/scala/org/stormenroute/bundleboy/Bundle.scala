@@ -116,7 +116,7 @@ object Bundle extends BundleApi {
   }
 
   object Clazzloader {
-    def apply(classloader: ClassLoader) = new ClassLoaderBundle(classloader)
+    def apply(classloader: ClassLoader) = new ClassPathBundle(classloader)
   }
 
   object Zip {
