@@ -103,8 +103,10 @@ abstract class BundleLoader(parent: ClassLoader) extends ClassLoader(parent) {
       val subcs = for (cp <- p.children) yield classes(cp)
       cs ++ subcs.flatten
     }
-    val cs = classes(packages(packageName))
-    cs.filter(c => baseClass.isAssignableFrom(c))
+    if (packages.contains(packageName)) {
+      val cs = classes(packages(packageName))
+      cs.filter(c => baseClass.isAssignableFrom(c))
+    } else Nil
   }
 
   private def getBundleResource(name: String) = {
