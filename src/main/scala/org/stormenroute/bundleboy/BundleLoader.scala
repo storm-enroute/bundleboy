@@ -18,7 +18,7 @@ abstract class BundleLoader(parent: ClassLoader) extends ClassLoader(parent) {
     val children = mutable.Set[Package]()
   }
 
-  def verifyClass(bytecode: Array[Byte]) {}
+  def verifyClass(bytecode: Array[Byte], offset: Int, length: Int) {}
 
   def allEntries: Seq[String]
 
@@ -93,7 +93,7 @@ abstract class BundleLoader(parent: ClassLoader) extends ClassLoader(parent) {
     } finally {
       is.close()
     }
-    verifyClass(buffer)
+    verifyClass(buffer, 0, len)
     defineClass(name, buffer, 0, len)
   }
 
