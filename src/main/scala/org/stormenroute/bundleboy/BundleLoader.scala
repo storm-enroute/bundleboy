@@ -9,8 +9,8 @@ import java.io._
 
 
 abstract class BundleLoader(parent: ClassLoader) extends ClassLoader(parent) {
-  private val root = Package("")
-  private val packages = mutable.Map[String, Package]()
+  protected val root = Package("")
+  protected val packages = mutable.Map[String, Package]()
   private var buffer: Array[Byte] = new Array[Byte](1024)
 
   case class Package(name: String) {
