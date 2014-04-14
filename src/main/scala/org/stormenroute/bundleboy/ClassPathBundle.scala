@@ -11,9 +11,9 @@ import scala.collection.convert.decorateAsScala._
 
 
 
-class ClassLoaderBundle(classloader: ClassLoader)
+class ClassPathBundle(classloader: ClassLoader)
 extends Bundle {
-  def name = s"ClassLoaderBundle($classloader)" 
+  def name = s"ClassPathBundle($classloader)" 
 
   def loadPaths(path: String) = throw new UnsupportedOperationException
 
@@ -25,5 +25,5 @@ extends Bundle {
 }
 
 
-object ClassLoaderBundle
+object ClassPathBundle
 
