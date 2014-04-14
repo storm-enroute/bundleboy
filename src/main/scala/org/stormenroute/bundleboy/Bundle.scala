@@ -99,11 +99,17 @@ object Bundle extends BundleApi {
       for (f <- b.loadPaths(""); if !mapping.contains(f)) mapping(f) = b
     }
 
-    def loadStream(name: String) = mapping(name).loadStream(name)
+    def loadStream(name: String) = mapping.get(name) match {
+      case Some(b) => b.loadStream(name)
+      case None => null
+    }
 
     def loadPaths(path: String) = bundles.foldLeft(Iterable[String]())(_ ++ _.loadPaths(path)).toSeq.toSeq
     
-    def loadClass(name: String) = mapping(name.replace(".", "/") + ".class").loadClass(name)
+    def loadClass(name: String) = mapping.get(name.replace(".", "/") + ".class") match {
+      case Some(b) => b.loadClass(name)
+      case None => throw new ClassNotFoundException(name)
+    }
     
     def loadSubclasses(packageName: String, baseClass: Class[_]) = {
       val cs = for (b <- bundles) yield b.loadSubclasses(packageName, baseClass)
