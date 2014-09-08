@@ -24,11 +24,13 @@ object BundleBoyBuild extends Build {
     versionFromFile(dir + File.separator + "version.conf")
   }
 
+  val bundleboyScalaVersion = "2.10.2"
+
   val bundleboySettings = Defaults.defaultSettings ++ Seq(
     name := "bundleboy",
     organization := "com.storm-enroute",
     version <<= frameworkVersion,
-    scalaVersion := "2.10.2",
+    scalaVersion := bundleboyScalaVersion,
     libraryDependencies ++= Seq(
       "org.scalatest" % "scalatest_2.10" % "2.1.0",
       "commons-io" % "commons-io" % "2.4",

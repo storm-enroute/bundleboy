@@ -22,10 +22,12 @@ object BundleboySbtPluginBuild extends Build {
     versionFromFile(dir.getParent + File.separator + "version.conf")
   }
 
+  val bundleboyScalaVersion = "2.10.2"
+
   val bundleboySbtPluginSettings = Defaults.defaultSettings ++ Seq(
     sbtPlugin := true,
     name := "bundleboy-sbt-plugin",
-    scalaVersion := "2.10.2",
+    scalaVersion := bundleboyScalaVersion,
     version <<= frameworkVersion,
     organization := "com.storm-enroute",
     libraryDependencies += "commons-io" % "commons-io" % "2.4",
