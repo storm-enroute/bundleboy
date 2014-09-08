@@ -1,7 +1,7 @@
 import sbt._
 import Keys._
 import Process._
-import java.io.File
+import java.io._
 
 
 
@@ -9,27 +9,23 @@ object BundleBoyBuild extends Build {
 
   /* bundleboy */
 
-  val publishUser = "SONATYPE_USER"
-  
-  val publishPass = "SONATYPE_PASS"
-  
-  val userPass = for {
-    user <- sys.env.get(publishUser)
-    pass <- sys.env.get(publishPass)
-  } yield (user, pass)
+  def versionFromFile(filename: String): String = {
+    val fis = new FileInputStream(filename)
+    val props = new java.util.Properties()
+    try props.load(fis)
+    finally fis.close()
 
-  val publishCreds: Seq[Setting[_]] = Seq(userPass match {
-    case Some((user, pass)) =>
-      credentials += Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", user, pass)
-    case None =>
-      // prevent publishing
-      publish <<= streams.map(_.log.info("Publishing to Sonatype is disabled since the \"" + publishUser + "\" and/or \"" + publishPass + "\" environment variables are not set."))
-  })
+    val major = props.getProperty("bundleboy_major")
+    val minor = props.getProperty("bundleboy_minor")
+    s"$major.$minor"
+  }
 
-  val bundleboySettings = Defaults.defaultSettings ++ publishCreds ++ Seq(
+  val frameworkVersion = versionFromFile("version.conf")
+
+  val bundleboySettings = Defaults.defaultSettings ++ Seq(
     name := "bundleboy",
     organization := "com.storm-enroute",
-    version := "0.2-SNAPSHOT",
+    version := frameworkVersion,
     scalaVersion := "2.10.2",
     libraryDependencies ++= Seq(
       "org.scalatest" % "scalatest_2.10" % "2.1.0",
