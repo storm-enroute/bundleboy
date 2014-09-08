@@ -26,7 +26,7 @@ object BundleboySbtPluginBuild extends Build {
     sbtPlugin := true,
     name := "bundleboy-sbt-plugin",
     scalaVersion := "2.10.2",
-    version := "0.2-SNAPSHOT",
+    version <<= frameworkVersion,
     organization := "com.storm-enroute",
     libraryDependencies += "commons-io" % "commons-io" % "2.4",
     resolvers ++= Seq(

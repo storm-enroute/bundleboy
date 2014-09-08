@@ -27,7 +27,7 @@ object BundleBoyBuild extends Build {
   val bundleboySettings = Defaults.defaultSettings ++ Seq(
     name := "bundleboy",
     organization := "com.storm-enroute",
-    version := frameworkVersion,
+    version <<= frameworkVersion,
     scalaVersion := "2.10.2",
     libraryDependencies ++= Seq(
       "org.scalatest" % "scalatest_2.10" % "2.1.0",
