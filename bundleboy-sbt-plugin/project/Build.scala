@@ -24,7 +24,10 @@ object BundleboySbtPluginBuild extends Build {
 
   val bundleboyScalaVersion = "2.10.4"
 
-  val bundleboyCrossScalaVersions = Seq("2.10.4", "2.11.1")
+  val bundleboyCrossScalaVersions = baseDirectory { dir =>
+    val path = dir.getParent + File.separator + "cross.conf"
+    scala.io.Source.fromFile(path).lines.toSeq
+  }
 
   val bundleboySbtPluginSettings = Defaults.defaultSettings ++ Seq(
     sbtPlugin := true,
@@ -32,7 +35,7 @@ object BundleboySbtPluginBuild extends Build {
     scalaVersion := bundleboyScalaVersion,
     version <<= frameworkVersion,
     organization := "com.storm-enroute",
-    crossScalaVersions := bundleboyCrossScalaVersions,
+    crossScalaVersions <<= bundleboyCrossScalaVersions,
     libraryDependencies += "commons-io" % "commons-io" % "2.4",
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",

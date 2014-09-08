@@ -26,14 +26,17 @@ object BundleBoyBuild extends Build {
 
   val bundleboyScalaVersion = "2.11.1"
 
-  val bundleboyCrossScalaVersions = Seq("2.10.4", "2.11.1")
+  val bundleboyCrossScalaVersions = baseDirectory { dir =>
+    val path = dir + File.separator + "cross.conf"
+    scala.io.Source.fromFile(path).lines.toSeq
+  }
 
   val bundleboySettings = Defaults.defaultSettings ++ Seq(
     name := "bundleboy",
     organization := "com.storm-enroute",
     version <<= frameworkVersion,
     scalaVersion := bundleboyScalaVersion,
-    crossScalaVersions := bundleboyCrossScalaVersions,
+    crossScalaVersions <<= bundleboyCrossScalaVersions,
     libraryDependencies <++= (scalaVersion)(sv => dependencies(sv)),
     scalacOptions ++= Seq(
       "-deprecation",
