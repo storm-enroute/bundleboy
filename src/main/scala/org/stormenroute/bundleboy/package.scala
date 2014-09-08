@@ -54,13 +54,13 @@ package object bundleboy {
         val request = url(address).secure
 
         Http(request GET) map { response =>
-          import scala.util.parsing.json._
+          import org.json4s._
           val content = response.getResponseBody
-          val json = JSON.parseRaw(content)
-          (json.get: @unchecked) match {
-            case JSONArray(packages) =>
-              for (JSONObject(fields) <- packages) yield {
-                fields("name").toString
+          val json = native.JsonMethods.parse(content)
+          (json: @unchecked) match {
+            case JArray(packages) =>
+              for (JObject(fields) <- packages) yield {
+                fields.find(_._1 == "name").get._2.toString
               }
           }
         }
