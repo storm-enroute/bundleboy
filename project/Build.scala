@@ -28,7 +28,7 @@ object BundleBoyBuild extends Build {
 
   val bundleboyCrossScalaVersions = baseDirectory { dir =>
     val path = dir + File.separator + "cross.conf"
-    scala.io.Source.fromFile(path).lines.toSeq
+    scala.io.Source.fromFile(path).getLines.filter(_.trim != "").toSeq
   }
 
   val bundleboySettings = Defaults.defaultSettings ++ Seq(
