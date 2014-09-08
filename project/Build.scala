@@ -20,7 +20,9 @@ object BundleBoyBuild extends Build {
     s"$major.$minor"
   }
 
-  val frameworkVersion = versionFromFile("version.conf")
+  val frameworkVersion = baseDirectory { dir =>
+    versionFromFile(dir + File.separator + "version.conf")
+  }
 
   val bundleboySettings = Defaults.defaultSettings ++ Seq(
     name := "bundleboy",
