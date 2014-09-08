@@ -24,12 +24,11 @@ object BundleboySbtPluginBuild extends Build {
 
   val bundleboyScalaVersion = "2.10.4"
 
-  val bundleboyCrossScalaVersions = Seq("2.10.4")
-
-  // val bundleboyCrossScalaVersions = baseDirectory { dir =>
-  //   val path = dir.getParent + File.separator + "cross.conf"
-  //   scala.io.Source.fromFile(path).getLines.filter(_.trim != "").toSeq
-  // }
+  val bundleboyCrossScalaVersions = baseDirectory { dir =>
+    val path = dir.getParent + File.separator + "cross.conf"
+    //scala.io.Source.fromFile(path).getLines.filter(_.trim != "").toSeq
+    Seq("2.10.4")
+  }
 
   val bundleboySbtPluginSettings = Defaults.defaultSettings ++ Seq(
     sbtPlugin := true,
