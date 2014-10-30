@@ -24,17 +24,20 @@ object BundleBoyBuild extends Build {
     versionFromFile(dir + File.separator + "version.conf")
   }
 
+  val bundleboyScalaVersion = "2.11.1"
+
+  val bundleboyCrossScalaVersions = baseDirectory { dir =>
+    val path = dir + File.separator + "cross.conf"
+    scala.io.Source.fromFile(path).getLines.filter(_.trim != "").toSeq
+  }
+
   val bundleboySettings = Defaults.defaultSettings ++ Seq(
     name := "bundleboy",
     organization := "com.storm-enroute",
     version <<= frameworkVersion,
-    scalaVersion := "2.10.2",
-    libraryDependencies ++= Seq(
-      "org.scalatest" % "scalatest_2.10" % "2.1.0",
-      "commons-io" % "commons-io" % "2.4",
-      "org.apache.commons" % "commons-compress" % "1.8",
-      "net.databinder.dispatch" %% "dispatch-core" % "0.11.0"
-    ),
+    scalaVersion := bundleboyScalaVersion,
+    crossScalaVersions <<= bundleboyCrossScalaVersions,
+    libraryDependencies <++= (scalaVersion)(sv => dependencies(sv)),
     scalacOptions ++= Seq(
       "-deprecation",
       "-unchecked",
@@ -76,6 +79,25 @@ object BundleBoyBuild extends Build {
         </developer>
       </developers>
   )
+
+  def dependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
+    case Some((2, major)) if major >= 11 => Seq(
+      "org.scalatest" % "scalatest_2.11" % "2.1.7" % "test",
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2",
+      "org.json4s" %% "json4s-native" % "3.2.10",
+      "commons-io" % "commons-io" % "2.4",
+      "org.apache.commons" % "commons-compress" % "1.8",
+      "net.databinder.dispatch" %% "dispatch-core" % "0.11.0"
+    )
+    case Some((2, 10)) => Seq(
+      "org.scalatest" % "scalatest_2.10" % "2.1.0" % "test",
+      "org.json4s" %% "json4s-native" % "3.2.10",
+      "commons-io" % "commons-io" % "2.4",
+      "org.apache.commons" % "commons-compress" % "1.8",
+      "net.databinder.dispatch" %% "dispatch-core" % "0.11.0"
+    )
+    case _ => Nil
+  }
 
   lazy val bundleboy = Project(
     "bundleboy",
