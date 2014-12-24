@@ -1,41 +1,38 @@
+
+
+
 import sbt._
 import Keys._
 import Process._
 import java.io._
+import org.stormenroute.mecha._
 
 
-
-object BundleBoyBuild extends Build {
+object BundleBoyBuild extends MechaRepoBuild {
 
   /* bundleboy */
 
-  def versionFromFile(filename: String): String = {
-    val fis = new FileInputStream(filename)
-    val props = new java.util.Properties()
-    try props.load(fis)
-    finally fis.close()
-
-    val major = props.getProperty("bundleboy_major")
-    val minor = props.getProperty("bundleboy_minor")
-    s"$major.$minor"
+  val frameworkVersion = Def.setting {
+    ConfigParsers.versionFromFile(
+        (baseDirectory in bundleboy).value / "version.conf",
+        List("bundleboy_major", "bundleboy_minor"))
   }
 
-  val frameworkVersion = baseDirectory { dir =>
-    versionFromFile(dir + File.separator + "version.conf")
-  }
-
-  val bundleboyScalaVersion = "2.11.1"
-
-  val bundleboyCrossScalaVersions = baseDirectory { dir =>
+  val bundleboyCrossScalaVersions = Def.setting {
+    val dir = (baseDirectory in bundleboy).value
     val path = dir + File.separator + "cross.conf"
     scala.io.Source.fromFile(path).getLines.filter(_.trim != "").toSeq
+  }
+
+  val bundleboyScalaVersion = Def.setting {
+    bundleboyCrossScalaVersions.value.head
   }
 
   val bundleboySettings = Defaults.defaultSettings ++ Seq(
     name := "bundleboy",
     organization := "com.storm-enroute",
     version <<= frameworkVersion,
-    scalaVersion := bundleboyScalaVersion,
+    scalaVersion <<= bundleboyScalaVersion,
     crossScalaVersions <<= bundleboyCrossScalaVersions,
     libraryDependencies <++= (scalaVersion)(sv => dependencies(sv)),
     scalacOptions ++= Seq(
@@ -99,10 +96,68 @@ object BundleBoyBuild extends Build {
     case _ => Nil
   }
 
-  lazy val bundleboy = Project(
+  lazy val bundleboy: Project = Project(
     "bundleboy",
     file("."),
     settings = bundleboySettings
   )
+
+  val bundleboySbtPluginScalaVersion = Def.setting {
+    "2.10.4"
+  }
+
+  val bundleboySbtPluginCrossScalaVersions = Def.setting {
+    Seq("2.10.4")
+  }
+
+  val bundleboySbtPluginSettings = Defaults.defaultSettings ++ Seq(
+    sbtPlugin := true,
+    name := "bundleboy-sbt-plugin",
+    scalaVersion <<= bundleboySbtPluginScalaVersion,
+    version <<= frameworkVersion,
+    organization := "com.storm-enroute",
+    crossScalaVersions <<= bundleboySbtPluginCrossScalaVersions,
+    libraryDependencies += "commons-io" % "commons-io" % "2.4",
+    resolvers ++= Seq(
+      "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+      "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
+    ),
+    publishMavenStyle := true,
+    publishTo <<= version { (v: String) =>
+      val nexus = "https://oss.sonatype.org/"
+      if (v.trim.endsWith("SNAPSHOT"))
+        Some("snapshots" at nexus + "content/repositories/snapshots")
+      else
+        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+    },
+    publishArtifact in Test := false,
+    pomIncludeRepository := { _ => false },
+    pomExtra :=
+      <url>http://storm-enroute.com/</url>
+      <licenses>
+        <license>
+          <name>BSD-style</name>
+          <url>http://opensource.org/licenses/BSD-3-Clause</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+      <scm>
+        <url>git@github.com:storm-enroute/bundleboy.git</url>
+        <connection>scm:git:git@github.com:storm-enroute/bundleboy.git</connection>
+      </scm>
+      <developers>
+        <developer>
+          <id>axel22</id>
+          <name>Aleksandar Prokopec</name>
+          <url>http://axel22.github.com/</url>
+        </developer>
+      </developers>
+  )
+
+  lazy val bundleboySbtPlugin = Project(
+    "bundleboy-sbt-plugin",
+    file("bundleboy-sbt-plugin"),
+    settings = bundleboySbtPluginSettings
+  ) dependsOn(bundleboy)
 
 }
