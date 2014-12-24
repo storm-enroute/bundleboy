@@ -2,10 +2,11 @@
 
 
 import sbt._
-import Keys._
-import Process._
+import sbt.Keys._
+import sbt.Process._
 import java.io._
 import org.stormenroute.mecha._
+
 
 
 object BundleBoyBuild extends MechaRepoBuild {
