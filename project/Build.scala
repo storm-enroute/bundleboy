@@ -11,6 +11,8 @@ import org.stormenroute.mecha._
 
 object BundleBoyBuild extends MechaRepoBuild {
 
+  def repoName = "bundleboy"
+
   /* bundleboy */
 
   val frameworkVersion = Def.setting {
