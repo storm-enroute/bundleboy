@@ -45,8 +45,10 @@ object BundleBoyBuild extends MechaRepoBuild {
       "-Yinline-warnings"
     ),
     resolvers ++= Seq(
-      "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
-      "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
+      "Sonatype OSS Snapshots" at
+        "https://oss.sonatype.org/content/repositories/snapshots",
+      "Sonatype OSS Releases" at
+        "https://oss.sonatype.org/content/repositories/releases"
     ),
     publishMavenStyle := true,
     publishTo <<= version { (v: String) =>
@@ -80,7 +82,8 @@ object BundleBoyBuild extends MechaRepoBuild {
       </developers>
   )
 
-  def dependencies(scalaVersion: String) = CrossVersion.partialVersion(scalaVersion) match {
+  def dependencies(scalaVersion: String) =
+    CrossVersion.partialVersion(scalaVersion) match {
     case Some((2, major)) if major >= 11 => Seq(
       "org.scalatest" % "scalatest_2.11" % "2.1.7" % "test",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2",
@@ -120,10 +123,20 @@ object BundleBoyBuild extends MechaRepoBuild {
     version <<= frameworkVersion,
     organization := "com.storm-enroute",
     crossScalaVersions <<= bundleboySbtPluginCrossScalaVersions,
-    libraryDependencies += "commons-io" % "commons-io" % "2.4",
+    libraryDependencies ++= Seq(
+      "commons-io" % "commons-io" % "2.4",
+      "org.scalatest" % "scalatest_2.10" % "2.1.0" % "test",
+      "org.json4s" %% "json4s-native" % "3.2.10",
+      "org.apache.commons" % "commons-compress" % "1.8",
+      "net.databinder.dispatch" %% "dispatch-core" % "0.11.0"
+    ),
+    unmanagedSourceDirectories in Compile +=
+      baseDirectory.value / ".." / "src" / "main" / "scala",
     resolvers ++= Seq(
-      "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
-      "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
+      "Sonatype OSS Snapshots" at
+        "https://oss.sonatype.org/content/repositories/snapshots",
+      "Sonatype OSS Releases" at
+        "https://oss.sonatype.org/content/repositories/releases"
     ),
     publishMavenStyle := true,
     publishTo <<= version { (v: String) =>
@@ -161,6 +174,6 @@ object BundleBoyBuild extends MechaRepoBuild {
     "bundleboy-sbt-plugin",
     file("bundleboy-sbt-plugin"),
     settings = bundleboySbtPluginSettings
-  ) dependsOn(bundleboy)
+  )
 
 }

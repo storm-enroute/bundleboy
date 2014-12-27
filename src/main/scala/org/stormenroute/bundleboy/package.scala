@@ -49,7 +49,7 @@ package object bundleboy {
         Http((request PUT) toRequest, handler)
       }
 
-      def getPackages(ownername: String, repo: String) = {
+      def getPackageNames(ownername: String, repo: String) = {
         val address = s"http://api.bintray.com/repos/$ownername/$repo/packages"
         val request = url(address).secure
 
@@ -60,7 +60,8 @@ package object bundleboy {
           (json: @unchecked) match {
             case JArray(packages) =>
               for (JObject(fields) <- packages) yield {
-                fields.find(_._1 == "name").get._2.toString
+                val JString(packageName) = fields.find(_._1 == "name").get._2
+                packageName
               }
           }
         }
