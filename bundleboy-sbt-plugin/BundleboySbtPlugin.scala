@@ -112,10 +112,14 @@ object BundleboySbtPlugin extends Plugin {
   val bundleLocalTask = TaskKey[Unit](
     "bundleLocal",
     "Bundles the file and copies it locally to the target file."
-  ) <<= (bundleKey, bundlePathKey, bundleLocalTargetKey, streams) map { (_, bundlePath, targetPath, streams) =>
+  ) := {
+    bundleKey.value
+    val bundlePath = bundlePathKey.value
+    val targetPath = baseDirectory.value / bundleLocalTargetKey.value
+    val log = streams.value.log
     println("Copying: " + bundlePath)
     println("Target:  " + targetPath)
-    FileUtils.copyFile(new File(bundlePath), new File(targetPath))
+    FileUtils.copyFile(new File(bundlePath), targetPath)
   }
 
   val bundleBintrayTask = InputKey[Unit](
