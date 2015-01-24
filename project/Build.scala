@@ -17,8 +17,8 @@ object BundleBoyBuild extends MechaRepoBuild {
 
   val frameworkVersion = Def.setting {
     ConfigParsers.versionFromFile(
-        (baseDirectory in bundleboy).value / "version.conf",
-        List("bundleboy_major", "bundleboy_minor"))
+      (baseDirectory in bundleboy).value / "version.conf",
+      List("bundleboy_major", "bundleboy_minor"))
   }
 
   val bundleboyCrossScalaVersions = Def.setting {
@@ -50,6 +50,7 @@ object BundleBoyBuild extends MechaRepoBuild {
       "Sonatype OSS Releases" at
         "https://oss.sonatype.org/content/repositories/releases"
     ),
+    publish <<= publish.dependsOn(publish in bundleboySbtPlugin),
     publishMavenStyle := true,
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"
