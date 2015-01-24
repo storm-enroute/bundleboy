@@ -81,7 +81,6 @@ object BundleBoyBuild extends MechaRepoBuild {
           <url>http://axel22.github.com/</url>
         </developer>
       </developers>,
-    publish <<= publish.dependsOn(publish in bundleboySbtPlugin),
     mechaPublishKey <<= mechaPublishKey.dependsOn(publish)
   )
 
