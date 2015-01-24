@@ -31,7 +31,8 @@ object BundleBoyBuild extends MechaRepoBuild {
     bundleboyCrossScalaVersions.value.head
   }
 
-  val bundleboySettings = Defaults.defaultSettings ++ Seq(
+  val bundleboySettings = Defaults.defaultSettings ++
+    MechaRepoPlugin.defaultSettings ++ Seq(
     name := "bundleboy",
     organization := "com.storm-enroute",
     version <<= frameworkVersion,
@@ -50,7 +51,6 @@ object BundleBoyBuild extends MechaRepoBuild {
       "Sonatype OSS Releases" at
         "https://oss.sonatype.org/content/repositories/releases"
     ),
-    publish <<= publish.dependsOn(publish in bundleboySbtPlugin),
     publishMavenStyle := true,
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"
@@ -80,7 +80,9 @@ object BundleBoyBuild extends MechaRepoBuild {
           <name>Aleksandar Prokopec</name>
           <url>http://axel22.github.com/</url>
         </developer>
-      </developers>
+      </developers>,
+    publish <<= publish.dependsOn(publish in bundleboySbtPlugin),
+    mechaPublishKey <<= mechaPublishKey.dependsOn(publish)
   )
 
   def dependencies(scalaVersion: String) =
