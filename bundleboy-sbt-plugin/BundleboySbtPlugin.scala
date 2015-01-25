@@ -109,10 +109,12 @@ object BundleboySbtPlugin extends Plugin {
     "Target file path for the bundle if it should be deployed locally."
   )
 
-  val bundleLocalTask = TaskKey[Unit](
+  val bundleLocalKey = TaskKey[Unit](
     "bundleLocal",
     "Bundles the file and copies it locally to the target file."
-  ) := {
+  )
+
+  val bundleLocalTask = bundleLocalKey := {
     bundleKey.value
     val bundlePath = bundlePathKey.value
     val targetPath = baseDirectory.value / bundleLocalTargetKey.value
