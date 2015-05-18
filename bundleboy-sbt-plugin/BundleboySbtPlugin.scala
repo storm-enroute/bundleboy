@@ -115,7 +115,7 @@ object BundleboySbtPlugin extends Plugin {
   )
 
   val bundleLocalTask = bundleLocalKey := {
-    bundleKey.value
+    val bundle = bundleKey.value
     val bundlePath = bundlePathKey.value
     val targetPath = baseDirectory.value / bundleLocalTargetKey.value
     val log = streams.value.log
