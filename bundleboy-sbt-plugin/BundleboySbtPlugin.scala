@@ -119,8 +119,8 @@ object BundleboySbtPlugin extends Plugin {
     val bundlePath = bundlePathKey.value
     val targetPath = baseDirectory.value / bundleLocalTargetKey.value
     val log = streams.value.log
-    println("Copying: " + bundlePath)
-    println("Target:  " + targetPath)
+    streams.value.log.info("Copying: " + bundlePath)
+    streams.value.log.info("Target:  " + targetPath)
     FileUtils.copyFile(new File(bundlePath), targetPath)
   }
 
