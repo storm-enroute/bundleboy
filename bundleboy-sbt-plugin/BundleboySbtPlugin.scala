@@ -23,7 +23,8 @@ object BundleboySbtPlugin extends Plugin {
     "Contains the path for the output bundle file."
   )
 
-  val bundlePathSetting = bundlePathKey <<= (crossTarget, name, scalaVersion, version) { (path, name, scalaVersion, version) =>
+  val bundlePathSetting = bundlePathKey <<= (crossTarget, name, scalaVersion, version) {
+    (path, name, scalaVersion, version) =>
     s"$path${File.separator}${name}_$scalaVersion-$version.bundle"
   }
 
@@ -37,7 +38,9 @@ object BundleboySbtPlugin extends Plugin {
     "Name of the bundle creator implementation."
   )
 
-  val bundleTask = bundleKey <<= (bundleCreatorKey, bundlePasswordKey, bundlePathKey, classDirectory in Compile, streams) {
+  val bundleTask = bundleKey <<= (
+    bundleCreatorKey, bundlePasswordKey, bundlePathKey, classDirectory in Compile,
+    streams) {
     (bundler, password, bundlepath, classdir, streams) =>
     streams map { streams =>
       assert(password != "", "Password cannot be empty.")
@@ -45,7 +48,8 @@ object BundleboySbtPlugin extends Plugin {
       if (bundlefile.exists()) bundlefile.delete()
       val alldirs = classdir.listFiles()
       streams.log.info("Bundling dirs: " + alldirs.mkString(", "))
-      Class.forName(bundler).newInstance.asInstanceOf[Bundle.Creator].fromFolders(alldirs, bundlepath, () => password.toCharArray)
+      Class.forName(bundler).newInstance.asInstanceOf[Bundle.Creator].fromFolders(
+        alldirs, bundlepath, () => password.toCharArray)
     }
   } dependsOn (packageBin in Compile)
 
@@ -55,7 +59,8 @@ object BundleboySbtPlugin extends Plugin {
   )
 
   val bundleBintrayUserApiSetting = bundleBintrayUserApiKey := {
-    val credentialsPath = sys.props("user.home") + File.separator + ".bintray" + File.separator + ".userApiKey"
+    val credentialsPath = sys.props("user.home") + File.separator + ".bintray" +
+      File.separator + ".userApiKey"
     val credentialsFile = new File(credentialsPath)
     if (credentialsFile.exists()) {
       val credentials = FileUtils.readFileToString(credentialsFile).trim.split(",")
@@ -65,7 +70,8 @@ object BundleboySbtPlugin extends Plugin {
     }
   }
 
-  private def withLogging(log: Logger, welcome: String, bye: String)(body: =>com.ning.http.client.Response) = {
+  private def withLogging(log: Logger, welcome: String, bye: String)
+    (body: =>com.ning.http.client.Response) = {
     log.info(welcome)
     val response = body
     log.info(s"$bye, response message: '" + response.getResponseBody("UTF-8") + "'")
@@ -76,20 +82,24 @@ object BundleboySbtPlugin extends Plugin {
 
   val bundleBintrayResetVersionTask = InputKey[Unit](
     "bundleBintrayResetVersion",
-    "Deletes and creates a new version for the package on Bintray: <repo> <package> <version>    " +
+    "Deletes and creates a new version for the package on Bintray: " +
+    "<repo> <package> <version>    " +
     "(note: existing version and all related files will be deleted)"
   ) <<= inputTask { (argTask: TaskKey[Seq[String]]) =>
-    (argTask, bundleBintrayUserApiKey, bundleKey, streams) map { (args, userapi, _, streams) =>
+    (argTask, bundleBintrayUserApiKey, bundleKey, streams) map {
+      (args, userapi, _, streams) =>
       import scala.concurrent._
       import scala.concurrent.duration._
       
       withLogging(streams.log, "Deleting version...", "Version deleted") {
-        val responseFuture = Bundle.Bintray.deleteVersion(userapi._1, userapi._2, args(0), args(1), args(2))
+        val responseFuture = Bundle.Bintray.deleteVersion(
+          userapi._1, userapi._2, args(0), args(1), args(2))
         Await.result(responseFuture, 6 seconds)
       }
 
       withLogging(streams.log, "Creating version...", "Version created") {
-        val responseFuture = Bundle.Bintray.createVersion(userapi._1, userapi._2, args(0), args(1), args(2), args(3))
+        val responseFuture = Bundle.Bintray.createVersion(
+          userapi._1, userapi._2, args(0), args(1), args(2), args(3))
         Await.result(responseFuture, 6 seconds)
       }
     }
@@ -126,15 +136,20 @@ object BundleboySbtPlugin extends Plugin {
 
   val bundleBintrayTask = InputKey[Unit](
     "bundleBintray",
-    "Creates a bundle and deploys it to Bintray: <repo> <package> <version> <bundleName>."
+    "Creates a bundle and deploys it to Bintray: " +
+    "<repo> <package> <version> <bundleName>."
   ) <<= inputTask { (argTask: TaskKey[Seq[String]]) =>
-    (argTask, bundleBintrayUserApiKey, bundlePathKey, bundleKey, streams) map { (args, userapi, path, _, streams) =>
+    (argTask, bundleBintrayUserApiKey, bundlePathKey, bundleKey, streams) map {
+      (args, userapi, path, _, streams) =>
       import scala.concurrent._
       import scala.concurrent.duration._
       
       withLogging(streams.log, "Uploading to Bintray...", "Upload completed") {
-        val onChunkSent = (a: Long, c: Long, t: Long) => { streams.log.info(s"${c / 1024}kB/${t / 1024}kB transferred"); () }
-        val responseFuture = Bundle.Bintray.upload(userapi._1, userapi._2, args(0), args(1), args(2), args(3), path, onChunkSent)
+        val onChunkSent = (a: Long, c: Long, t: Long) => {
+          streams.log.info(s"${c / 1024}kB/${t / 1024}kB transferred"); ()
+        }
+        val responseFuture = Bundle.Bintray.upload(
+          userapi._1, userapi._2, args(0), args(1), args(2), args(3), path, onChunkSent)
         streams.log.info("Tracking progress...")
         sleepRetry(600, 4000L) {
           streams.log.info("...")
