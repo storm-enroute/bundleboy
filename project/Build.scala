@@ -1,11 +1,11 @@
 
 
 
+import java.io._
+import org.stormenroute.mecha._
 import sbt._
 import sbt.Keys._
 import sbt.Process._
-import java.io._
-import org.stormenroute.mecha._
 
 
 
