@@ -33,7 +33,8 @@ trait Bundle {
 object Bundle extends BundleApi {
 
   trait Creator {
-    def fromFolders(files: Seq[File], zipName: String, passwordProvider: () => Array[Char]): Unit
+    def fromFolders(files: Seq[File], zipName: String,
+      passwordProvider: () => Array[Char]): Unit
   }
 
   trait Depickler[T] {
@@ -104,7 +105,8 @@ object Bundle extends BundleApi {
       case None => null
     }
 
-    def loadPaths(path: String) = bundles.foldLeft(Iterable[String]())(_ ++ _.loadPaths(path)).toSeq.toSeq
+    def loadPaths(path: String) =
+      bundles.foldLeft(Iterable[String]())(_ ++ _.loadPaths(path)).toSeq.toSeq
     
     def loadClass(name: String) = mapping.get(name.replace(".", "/") + ".class") match {
       case Some(b) => b.loadClass(name)
@@ -126,8 +128,10 @@ object Bundle extends BundleApi {
   }
 
   object Zip {
-    def apply(name: String, filename: String) = new ZipBundle(name, filename, () => null)
-    def apply(name: String, file: File) = new ZipBundle(name, file, () => null)
+    def apply(name: String, filename: String) =
+      new ZipBundle(name, filename, () => null)
+    def apply(name: String, file: File) =
+      new ZipBundle(name, file, () => null)
   }
 
 }
