@@ -23,7 +23,3 @@ extends Bundle {
 
   def loadStream(path: String) = classloader.getResourceAsStream(path)
 }
-
-
-object ClassPathBundle
-
