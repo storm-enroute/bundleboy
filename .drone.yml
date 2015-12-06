@@ -1,8 +1,5 @@
 build:
   image: stormenroute/storm-enroute-build:0.1
   commands:
-    - mkdir -p ~/.ssh
-    - (set +x; echo $$SSH_PRIVATE_KEY; set -x) # > ~/.ssh/id_rsa
-    - (set +x; echo $$SSH_PUBLIC_KEY; set -x) # > ~/.ssh/id_rsa.pub
     - echo "pull request no. $DRONE_PULL_REQUEST"
     - if [ "$DRONE_PULL_REQUEST" != "" ]; then (sbt test); else (sbt mecha-nightly); fi
