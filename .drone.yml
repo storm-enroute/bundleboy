@@ -1,4 +1,4 @@
 build:
   image: stormenroute/storm-enroute-build:0.1
   commands:
-    - sbt test
+    - sbt mecha-nightly
