@@ -1,0 +1,4 @@
+build:
+  image: williamyeh/scala
+  commands:
+    - sbt test
