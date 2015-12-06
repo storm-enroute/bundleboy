@@ -1,4 +1,4 @@
 build:
   image: stormenroute/storm-enroute-build:0.1
   commands:
-    - echo "pull request no. \'$$DRONE_PULL_REQUEST\'"
+    - echo "pull request no. $DRONE_PULL_REQUEST"
