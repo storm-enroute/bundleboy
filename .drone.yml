@@ -1,8 +1,8 @@
 build:
   image: stormenroute/storm-enroute-build:0.1
   commands:
+    - echo "Pull request number: $$DRONE_PULL_REQUEST"
     - >
-      echo "Pull request: $$DRONE_PULL_REQUEST" \
       if [ "$$DRONE_PULL_REQUEST" == "" ]; then \
         sbt test \
       else \
