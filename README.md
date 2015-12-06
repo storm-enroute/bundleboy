@@ -1,6 +1,6 @@
 <img src='bundleboy-title-96.png'></img>
 
-Bundling framework for resource packs.
+Bundling framework for reading the contents resource packs, and an SBT plugin for creating them.
 
 CI service         | Status | Description
 -------------------|--------|------------
