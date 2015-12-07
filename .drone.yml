@@ -1,7 +1,5 @@
 build:
   image: stormenroute/storm-enroute-build:0.2
   commands:
-    - eval `ssh-agent -s`
-    - ssh-add ~/.ssh/id_rsa
     - echo "pull request no. $DRONE_PULL_REQUEST"
     - if [ "$DRONE_PULL_REQUEST" != "" ]; then (sbt test); else (sbt mecha-nightly); fi
