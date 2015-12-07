@@ -5,6 +5,7 @@ build:
     - SONATYPE_USER=$$SONATYPE_USER
     - SONATYPE_PASS=$$SONATYPE_PASS
   commands:
+    - ls ~/.ssh/
     - eval `ssh-agent -s`
     - echo $SSH_KEY_PASS >> ssh-add ~/.ssh/id_rsa
     - export SSH_KEY_PASS=""
