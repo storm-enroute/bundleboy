@@ -1,7 +1,10 @@
 build:
   image: stormenroute/storm-enroute-build:0.3
+  environment:
+    - SSH_KEY_PASS=$$SSH_KEY_PASS
   commands:
     - eval `ssh-agent -s`
-    - echo $$SSH_KEY_PASS >> ssh-add ~/.ssh/id_rsa
+    - echo $SSH_KEY_PASS >> ssh-add ~/.ssh/id_rsa
+    - export SSH_KEY_PASS=""
     - echo "pull request no. $DRONE_PULL_REQUEST"
     - if [ "$DRONE_PULL_REQUEST" != "" ]; then (sbt test); else (sbt mecha-nightly); fi
