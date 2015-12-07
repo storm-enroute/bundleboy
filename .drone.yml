@@ -9,5 +9,6 @@ build:
     - eval `ssh-agent -s`
     - echo $SSH_KEY_PASS >> ssh-add ~/.ssh/id_rsa
     - export SSH_KEY_PASS=""
+    - git clone git@github.com:storm-enroute/bundleboy.git
     - echo "pull request no. $DRONE_PULL_REQUEST"
     - if [ "$DRONE_PULL_REQUEST" != "" ]; then (sbt test); else (sbt mecha-nightly); fi
