@@ -1,5 +1,5 @@
 build:
-  image: stormenroute/storm-enroute-build:0.2
+  image: stormenroute/storm-enroute-build:0.1
   commands:
     - eval `ssh-agent -s`
     - ssh-add ~/.ssh/id_rsa
