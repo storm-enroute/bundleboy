@@ -7,8 +7,13 @@ build:
   commands:
     - ssh-keyscan github.com >> ~/.ssh/known_hosts
     - eval `ssh-agent -s`
-    - echo $SSH_KEY_PASS >> ssh-add ~/.ssh/id_rsa
+    - echo "exec cat" > ap-cat.sh
+    - chmod a+x ap-cat.sh
+    - export DISPLAY=1
+    - echo $SSH_KEY_PASS | SSH_ASKPASS=./ap-cat.sh ssh-add ~/.ssh/id_rsa
+    - rm ap-cat.sh
     - export SSH_KEY_PASS=""
+    - export DISPLAY=""
     - git clone git@github.com:storm-enroute/bundleboy.git
     - echo "pull request no. $DRONE_PULL_REQUEST"
     - if [ "$DRONE_PULL_REQUEST" != "" ]; then (sbt test); else (sbt mecha-nightly); fi
