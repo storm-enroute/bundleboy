@@ -7,7 +7,7 @@ build:
   commands:
     - ssh-keyscan github.com >> ~/.ssh/known_hosts
     - |
-      if [ ! -z $SSH_KEY_PASS ]; then
+      if [ "$SSH_KEY_PASS" != '$$SSH_KEY_PASS' ]; then
         eval `ssh-agent -s`
         echo "Setting up ssh-agent."
         echo "exec cat" > ap-cat.sh
@@ -17,6 +17,9 @@ build:
         rm ap-cat.sh
         export SSH_KEY_PASS=""
         export DISPLAY=""
+      else
+        export SONATYPE_USER=""
+        export SONATYPE_PASS=""
       fi
     - echo "pull request no. $DRONE_PULL_REQUEST"
     - if [ "$DRONE_PULL_REQUEST" != "" ]; then (sbt test); else (sbt mecha-nightly); fi
