@@ -18,6 +18,5 @@ build:
         export SSH_KEY_PASS=""
         export DISPLAY=""
       fi
-    - git clone git@github.com:storm-enroute/apidocs.git
     - echo "pull request no. $DRONE_PULL_REQUEST"
     - if [ "$DRONE_PULL_REQUEST" != "" ]; then (sbt test); else (sbt mecha-nightly); fi
