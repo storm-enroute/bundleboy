@@ -1,6 +1,6 @@
 <img src='bundleboy-title-96.png'></img>
 
-Library for reading the contents resource packs, with an SBT plugin for creating bundles.
+Library for reading resource packs (i.e. bundles), with an SBT plugin for creating them.
 
 CI service         | Status | Description
 -------------------|--------|------------
