@@ -6,9 +6,9 @@ build:
     - SONATYPE_PASS=$$SONATYPE_PASS
   commands:
     - ssh-keyscan github.com >> ~/.ssh/known_hosts
-    - eval `ssh-agent -s`
     - |
       if [ -z $SSH_KEY_PASS ]; then
+        eval `ssh-agent -s`
         export DISPLAY=""
         echo "Setting up ssh-agent."
         echo "exec cat" > ap-cat.sh
@@ -18,5 +18,6 @@ build:
         rm ap-cat.sh
         export SSH_KEY_PASS=""
       fi
+    - git clone git@github.com:storm-enroute/apidocs.git .
     - echo "pull request no. $DRONE_PULL_REQUEST"
     - if [ "$DRONE_PULL_REQUEST" != "" ]; then (sbt test); else (sbt mecha-nightly); fi
