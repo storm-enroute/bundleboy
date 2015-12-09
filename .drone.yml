@@ -26,14 +26,16 @@ build:
         export SONATYPE_PASS=""
       fi
     - echo "Pull request no. $DRONE_PULL_REQUEST"
-    - while read v; do
+    - |
+      while read v; do
         if [ "$DRONE_PULL_REQUEST" = "" ]; then
           sbt "++ $v ; mecha-nightly"
         else
           sbt "++ $v ; test"
         fi
       done <cross.conf
-    - while read v; do
+    - |
+      while read v; do
         if [ "$DRONE_PULL_REQUEST" = "" ]; then
           sbt "++ $v ; project bundleboy-sbt-plugin ; test ; publish"
         else
