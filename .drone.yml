@@ -26,19 +26,11 @@ build:
         export SONATYPE_PASS=""
       fi
     - echo "Pull request no. $DRONE_PULL_REQUEST"
-    - |
-      while read v; do
-        if [ "$DRONE_PULL_REQUEST" = "" ]; then
-          sbt "++ $v ; mecha-nightly"
-        else
-          sbt "++ $v ; test"
-        fi
-      done <cross.conf
-    - |
-      while read v; do
-        if [ "$DRONE_PULL_REQUEST" = "" ]; then
-          sbt "++ $v ; project bundleboy-sbt-plugin ; test ; publish"
-        else
-          sbt "++ $v ; project bundleboy-sbt-plugin ; test"
-        fi
-      done <plugin-cross.conf
+notify:
+  irc:
+    prefix: Storm Enroute Build
+    nick: storm-enroute-bot
+    channel: storm-enroute-dev
+    server:
+      host: chat.freenode.net
+      port: 6667
