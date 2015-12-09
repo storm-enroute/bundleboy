@@ -7,7 +7,6 @@ build:
   commands:
     - ssh-keyscan github.com >> ~/.ssh/known_hosts
     - |
-      echo $SSH_KEY_PASS
       if [ "$DRONE_PULL_REQUEST" = "" ]; then
         eval `ssh-agent -s`
         echo "Setting up ssh-agent."
