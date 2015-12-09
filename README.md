@@ -1,6 +1,7 @@
 <img src='bundleboy-title-96.png'></img>
 
-Library for reading resource packs (i.e. bundles), and an SBT plugin for creating them.
+Minimalistic Scala library for reading resource packs (i.e. bundles),
+and an SBT plugin for creating them.
 
 CI service         | Status | Description
 -------------------|--------|------------
