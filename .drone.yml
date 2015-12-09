@@ -10,6 +10,7 @@ build:
   commands:
     - ssh-keyscan github.com >> ~/.ssh/known_hosts
     - |
+      echo "Secret set: $$TEST_VAR"
       if [ "$DRONE_PULL_REQUEST" = "" ]; then
         eval `ssh-agent -s`
         echo "Setting up ssh-agent."
@@ -25,5 +26,5 @@ build:
         export SONATYPE_USER=""
         export SONATYPE_PASS=""
       fi
-    - echo "pull request no. $DRONE_PULL_REQUEST"
+    - echo "Pull request no. $DRONE_PULL_REQUEST"
     - if [ "$DRONE_PULL_REQUEST" = "" ]; then (sbt mecha-nightly); else (sbt test); fi
