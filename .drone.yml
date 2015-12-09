@@ -28,8 +28,8 @@ build:
     - echo "Pull request no. $DRONE_PULL_REQUEST"
 notify:
   irc:
-    prefix: Storm Enroute Build
-    nick: storm-enroute-bot
+    prefix: storm-enroute build
+    nick: eve-bot
     channel: storm-enroute-dev
     server:
       host: chat.freenode.net
