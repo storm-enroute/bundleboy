@@ -1,5 +1,5 @@
 build:
-  image: stormenroute/storm-enroute-build:0.6
+  image: stormenroute/storm-enroute-build:0.7
   cache:
     mount:
       - .ivy2
