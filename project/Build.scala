@@ -90,7 +90,7 @@ object BundleBoyBuild extends MechaRepoBuild {
   def dependencies(scalaVersion: String) =
     CrossVersion.partialVersion(scalaVersion) match {
     case Some((2, major)) if major >= 11 => Seq(
-      "org.scalatest" % "scalatest_2.11" % "2.1.7" % "test",
+      "org.scalatest" % "scalatest_2.11" % "2.2.6" % "test",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2",
       "org.json4s" %% "json4s-native" % "3.2.10",
       "commons-io" % "commons-io" % "2.4",
