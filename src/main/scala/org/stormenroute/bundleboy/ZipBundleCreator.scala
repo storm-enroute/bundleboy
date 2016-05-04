@@ -12,7 +12,9 @@ import java.util.zip._
 
 
 class ZipBundleCreator extends Bundle.Creator {
-  def fromFolders(files: Seq[File], zipName: String, passwordProvider: () => Array[Char]) {
+  def fromFolders(
+    files: Seq[File], zipName: String, passwordProvider: () => Array[Char]
+  ) {
     var fos: FileOutputStream = null
     var zipos: ZipOutputStream = null
     val buffer = new Array[Byte](4096)
