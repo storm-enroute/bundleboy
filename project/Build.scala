@@ -31,8 +31,7 @@ object BundleBoyBuild extends MechaRepoBuild {
     bundleboyCrossScalaVersions.value.head
   }
 
-  val bundleboySettings = Defaults.defaultSettings ++
-    MechaRepoPlugin.defaultSettings ++ Seq(
+  val bundleboySettings = MechaRepoPlugin.defaultSettings ++ Seq(
     name := "bundleboy",
     organization := "com.storm-enroute",
     version <<= frameworkVersion,
@@ -122,7 +121,7 @@ object BundleBoyBuild extends MechaRepoBuild {
     Seq("2.10.4")
   }
 
-  val bundleboySbtPluginSettings = Defaults.defaultSettings ++ Seq(
+  val bundleboySbtPluginSettings = Seq(
     sbtPlugin := true,
     name := "bundleboy-sbt-plugin",
     scalaVersion <<= bundleboySbtPluginScalaVersion,
